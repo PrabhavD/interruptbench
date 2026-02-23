@@ -114,3 +114,12 @@ class TaskGenerator:
         if self.domain != "any":
             pool = [t for t in pool if t.domain == self.domain] or pool
         return self.rng.choice(pool)
+    
+    @classmethod
+    def from_config(cls, config: dict) -> "TaskGenerator":
+     return cls(
+          difficulty=config.get("difficulty", "any"),
+          domain=config.get("domain", "any"),
+          seed=config.get("seed", None),
+     )
+
