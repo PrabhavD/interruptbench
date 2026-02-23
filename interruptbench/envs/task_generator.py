@@ -69,6 +69,36 @@ TASK_TEMPLATES = [
           "Document the experiment tracking workflow","List key internal tools",
           "Write a first-week checklist"],
          "writing", "easy"),
+     Task("Style Guide",
+          "Write a company-wide coding style guide for Python projects.",
+          ["Define naming conventions", "Specify import ordering rules",
+          "Document string formatting standards", "Write docstring requirements",
+          "Add a linting and enforcement section"],
+          "writing", "hard"),
+     Task("Environment Setup Script",
+          "Write a shell script to set up a new developer machine from scratch.",
+          ["Install system dependencies", "Configure git and SSH keys",
+          "Set up Python with pyenv", "Install project dependencies",
+          "Verify the setup works end-to-end"],
+          "engineering", "easy"),
+     Task("Dataset Audit",
+          "Audit a machine learning training dataset for quality issues.",
+          ["Check for class imbalance", "Identify duplicate records",
+          "Flag missing or null values", "Assess label noise",
+          "Write a summary report with recommendations"],
+          "research", "easy"),
+     Task("Quarterly Roadmap",
+          "Draft a product roadmap for the next quarter for an API platform.",
+          ["Review last quarter outcomes", "Gather stakeholder input",
+          "Prioritise features by impact and effort",
+          "Define success metrics per feature", "Write the roadmap document"],
+          "product", "medium"),
+     Task("Migration Plan",
+          "Plan a zero-downtime database migration from PostgreSQL to a new schema.",
+          ["Audit current schema and dependencies", "Design the new schema",
+          "Write a forwards-compatible migration script",
+          "Plan a rollback strategy", "Define a staging validation checklist"],
+          "engineering", "hard"),
 ]
 
 class TaskGenerator:
@@ -84,3 +114,12 @@ class TaskGenerator:
         if self.domain != "any":
             pool = [t for t in pool if t.domain == self.domain] or pool
         return self.rng.choice(pool)
+    
+    @classmethod
+    def from_config(cls, config: dict) -> "TaskGenerator":
+     return cls(
+          difficulty=config.get("difficulty", "any"),
+          domain=config.get("domain", "any"),
+          seed=config.get("seed", None),
+     )
+
