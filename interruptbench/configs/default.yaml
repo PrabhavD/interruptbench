@@ -1,0 +1,16 @@
+env:
+  difficulty: "any"
+  domain: "any"
+  interrupt_frequency: "medium"
+  max_steps: 20
+  seed: 42
+
+training:
+  model: "Qwen/Qwen2.5-1.5B-Instruct"
+  n_episodes: 200
+  epochs: 3
+  batch_size: 4
+  grad_accum: 4
+  num_generations: 4
+  learning_rate: 1.0e-5
+  eval_episodes: 20
