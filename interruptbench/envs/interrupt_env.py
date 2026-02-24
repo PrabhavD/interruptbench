@@ -18,6 +18,7 @@ class InterruptEnv(gym.Env):
         )
         self.interrupt_scheduler = InterruptionScheduler(
             frequency=cfg.get("interrupt_frequency", "medium"),
+            difficulty=cfg.get("interrupt_difficulty", "any"),
             seed=cfg.get("seed", None),
         )
         self.max_steps = cfg.get("max_steps", 20)
