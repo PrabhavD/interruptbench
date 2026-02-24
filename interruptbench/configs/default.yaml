@@ -2,6 +2,7 @@ env:
   difficulty: "any"
   domain: "any"
   interrupt_frequency: "medium"
+  interrupt_difficulty: "any"
   max_steps: 20
   seed: 42
 
