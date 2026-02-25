@@ -34,7 +34,10 @@ def _subtask_score(response: str, subtask: str) -> float:
     if not keywords:
         return 0.5
     hits = sum(1 for kw in keywords if kw in response.lower())
-    return min(1.0, hits / len(keywords))
+    # Give partial credit even for zero hits - random policy gets 0.2 baseline
+    # so a trained model that actually addresses the subtask scores meaningfully higher
+    base = 0.2
+    return base + (1.0 - base) *min(1.0, hits / len(keywords))
 
 def _interruption_score(response: str, interruption) -> float:
     acknowledgement_phrases = [
