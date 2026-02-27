@@ -1,27 +1,64 @@
 from __future__ import annotations
 import gymnasium as gym
 from typing import Any, Dict, Optional
+
+from interruptbench.configs.env_config import EnvConfig
 from .task_generator import Task, TaskGenerator
 from .interruption import Interruption, InterruptionScheduler
 from .reward import compute_reward
 
 class InterruptEnv(gym.Env):
+    """
+    A Gymnasium environment for training LLM agents on long-horizon tasks
+    with mid-trajectory interruptions.
+
+    The agent is assigned a structured multi-step task and must complete
+    each subtask in sequence. At configurable steps, interruptions are
+    injected — scope changes, priority shifts, contradictions, or
+    clarifications — that the agent must explicitly acknowledge and
+    incorporate into its response.
+
+    Observation (dict):
+        task_description  : str        — overall task description
+        current_subtask   : str        — subtask to address this step
+        subtask_index     : int        — index of current subtask (0-based)
+        history           : list[dict] — previous steps with responses + rewards
+        interruption      : str | None — active interruption message, if any
+
+    Action:
+        str — the agent's text response to the current subtask
+
+    Reward:
+        Weighted sum: subtask completion (50%) + interruption adherence (30%)
+        + efficiency (10%) + completion bonus (10%). See reward.py for details.
+
+    Args:
+        config: EnvConfig, dict, or None. If None, uses default EnvConfig.
+    """
     metadata = {"render_modes": ["text"]}
 
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__()
-        cfg = config or {}
+        # Accept either a dict (backwards compatible) or EnvConfig dataclass (preferred)
+        if isinstance(config, dict):
+            cfg = EnvConfig.from_dict(config)
+        elif isinstance(config, EnvConfig):
+            cfg = config
+        else:
+            cfg = EnvConfig()  # Use defaults
+        
         self.task_generator = TaskGenerator(
-            difficulty=cfg.get("difficulty", "any"),
-            domain=cfg.get("domain", "any"),
-            seed=cfg.get("seed", None),
+            difficulty=cfg.difficulty,
+            domain=cfg.domain,
+            seed=cfg.seed,
         )
         self.interrupt_scheduler = InterruptionScheduler(
-            frequency=cfg.get("interrupt_frequency", "medium"),
-            difficulty=cfg.get("interrupt_difficulty", "any"),
-            seed=cfg.get("seed", None),
+            frequency=cfg.interrupt_frequency,
+            difficulty=cfg.interrupt_difficulty,
+            seed=cfg.seed,
         )
-        self.max_steps = cfg.get("max_steps", 20)
+        self.max_steps = cfg.max_steps
+        self.cfg = cfg
         self.action_space = gym.spaces.Text(min_length=1, max_length=2048)
         self.observation_space = gym.spaces.Dict({
             "subtask_index": gym.spaces.Discrete(20),

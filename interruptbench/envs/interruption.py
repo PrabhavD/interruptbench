@@ -69,6 +69,29 @@ DIFFICULTY_PROFILE = {
 }
 
 class InterruptionScheduler:
+    """
+    Schedules interruptions across the steps of a task episode.
+
+    Given a task with n subtasks, selects a subset of steps at which
+    interruptions will fire, and assigns each an interruption type drawn
+    from the allowed types for the configured difficulty level.
+
+    Interruption frequency controls how many interruptions occur per episode:
+        - low:    1 interruption
+        - medium: 2 interruptions
+        - high:   3 interruptions
+
+    Interruption difficulty controls which types are allowed:
+        - easy:   clarification only (additive, no conflict)
+        - medium: clarification, scope_change, priority_shift
+        - hard:   scope_change, priority_shift, contradiction
+        - any:    all 4 types
+
+    Args:
+        frequency:  str — how many interruptions per episode ("low" | "medium" | "high")
+        difficulty: str — which interruption types are allowed ("easy" | "medium" | "hard" | "any")
+        seed:       int | None — RNG seed for reproducible scheduling
+    """
     def __init__(self, frequency="medium", difficulty="any", seed=None):
         self.frequency = frequency
         self.difficulty = difficulty          # ← new parameter
@@ -76,6 +99,21 @@ class InterruptionScheduler:
         self._count_map = {"low": 1, "medium": 2, "high": 3}
 
     def schedule(self, n_subtasks: int) -> List[Interruption]:
+        """
+        Generate a list of interruptions to inject during a task episode.
+
+        Selects interruption steps by sampling without replacement from
+        steps 1..n_subtasks-1 (never fires on step 0 so the agent always
+        sees the task before the first interruption). Each selected step
+        is assigned one interruption type drawn uniformly from the
+        allowed types for the configured difficulty level.
+
+        Args:
+            n_subtasks: int — total number of subtasks in the episode
+
+        Returns:
+            List[Interruption] sorted by step index
+        """
         n = self._count_map.get(self.frequency, 2)
         n = min(n, n_subtasks - 1)
         steps = sorted(self.rng.sample(range(1, n_subtasks), n))
