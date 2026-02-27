@@ -102,12 +102,40 @@ TASK_TEMPLATES = [
 ]
 
 class TaskGenerator:
+    """
+    Samples structured multi-step tasks for use in InterruptEnv episodes.
+
+    Draws from a fixed pool of task templates, optionally filtered by
+    difficulty tier and domain. All sampling is seeded for reproducibility.
+
+    Available difficulties: "easy" | "medium" | "hard" | "any"
+    Available domains:      "writing" | "engineering" | "research" | "product" | "any"
+
+    If the filtered pool is empty (e.g. no hard product tasks exist),
+    the filter is silently dropped and the full pool is used. This prevents
+    training from stalling on misconfigured filters.
+
+    Args:
+        difficulty: str — filter tasks by difficulty tier, or "any" for no filter
+        domain:     str — filter tasks by domain, or "any" for no filter
+        seed:       int | None — RNG seed for reproducible sampling
+    """
     def __init__(self, difficulty="any", domain="any", seed=None):
         self.difficulty = difficulty
         self.domain = domain
         self.rng = random.Random(seed)
 
     def sample(self) -> Task:
+        """
+        Sample one task from the filtered template pool.
+
+        Applies difficulty and domain filters in sequence. If either filter
+        produces an empty pool, falls back to the unfiltered pool to avoid
+        raising an error mid-episode.
+
+        Returns:
+            Task — a randomly selected task matching the configured filters
+        """
         pool = TASK_TEMPLATES
         if self.difficulty != "any":
             pool = [t for t in pool if t.difficulty == self.difficulty] or pool
@@ -117,6 +145,19 @@ class TaskGenerator:
     
     @classmethod
     def from_config(cls, config: dict) -> "TaskGenerator":
+     """
+     Construct a TaskGenerator from a configuration dictionary.
+
+     Read the keys "difficulty", "domain", and "seed" from the dict,
+     falling back to defaults if any are absent. Intended for use with
+     YAML-loaded config dicts.
+
+     Args:
+          config: dict - configuration dict, typically from default.yaml
+     
+     Returns:
+          TaskGenerator instance initialized according to the provided settings
+     """
      return cls(
           difficulty=config.get("difficulty", "any"),
           domain=config.get("domain", "any"),

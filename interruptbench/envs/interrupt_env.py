@@ -8,6 +8,33 @@ from .interruption import Interruption, InterruptionScheduler
 from .reward import compute_reward
 
 class InterruptEnv(gym.Env):
+    """
+    A Gymnasium environment for training LLM agents on long-horizon tasks
+    with mid-trajectory interruptions.
+
+    The agent is assigned a structured multi-step task and must complete
+    each subtask in sequence. At configurable steps, interruptions are
+    injected — scope changes, priority shifts, contradictions, or
+    clarifications — that the agent must explicitly acknowledge and
+    incorporate into its response.
+
+    Observation (dict):
+        task_description  : str        — overall task description
+        current_subtask   : str        — subtask to address this step
+        subtask_index     : int        — index of current subtask (0-based)
+        history           : list[dict] — previous steps with responses + rewards
+        interruption      : str | None — active interruption message, if any
+
+    Action:
+        str — the agent's text response to the current subtask
+
+    Reward:
+        Weighted sum: subtask completion (50%) + interruption adherence (30%)
+        + efficiency (10%) + completion bonus (10%). See reward.py for details.
+
+    Args:
+        config: EnvConfig, dict, or None. If None, uses default EnvConfig.
+    """
     metadata = {"render_modes": ["text"]}
 
     def __init__(self, config: Dict[str, Any] = None):
