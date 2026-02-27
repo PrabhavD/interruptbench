@@ -1,6 +1,8 @@
 from __future__ import annotations
 import gymnasium as gym
 from typing import Any, Dict, Optional
+
+from interruptbench.configs.env_config import EnvConfig
 from .task_generator import Task, TaskGenerator
 from .interruption import Interruption, InterruptionScheduler
 from .reward import compute_reward
@@ -10,18 +12,26 @@ class InterruptEnv(gym.Env):
 
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__()
-        cfg = config or {}
+        # Accept either a dict (backwards compatible) or EnvConfig dataclass (preferred)
+        if isinstance(config, dict):
+            cfg = EnvConfig.from_dict(config)
+        elif isinstance(config, EnvConfig):
+            cfg = config
+        else:
+            cfg = EnvConfig()  # Use defaults
+        
         self.task_generator = TaskGenerator(
-            difficulty=cfg.get("difficulty", "any"),
-            domain=cfg.get("domain", "any"),
-            seed=cfg.get("seed", None),
+            difficulty=cfg.difficulty,
+            domain=cfg.domain,
+            seed=cfg.seed,
         )
         self.interrupt_scheduler = InterruptionScheduler(
-            frequency=cfg.get("interrupt_frequency", "medium"),
-            difficulty=cfg.get("interrupt_difficulty", "any"),
-            seed=cfg.get("seed", None),
+            frequency=cfg.interrupt_frequency,
+            difficulty=cfg.interrupt_difficulty,
+            seed=cfg.seed,
         )
-        self.max_steps = cfg.get("max_steps", 20)
+        self.max_steps = cfg.max_steps
+        self.cfg = cfg
         self.action_space = gym.spaces.Text(min_length=1, max_length=2048)
         self.observation_space = gym.spaces.Dict({
             "subtask_index": gym.spaces.Discrete(20),
