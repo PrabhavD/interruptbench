@@ -1,0 +1,6 @@
+.venv
+__pychache__
+.git
+wandb
+checkpoints
+*.pyc
