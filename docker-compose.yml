@@ -1,0 +1,16 @@
+services:
+  interruptbench:
+    image: interruptbench:base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: interruptbench
+    working_dir: /app
+    command: ["python", "scripts/random_rollout.py"]
+    volumes:
+      - .:/app
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+    stdin_open: true
+    tty: true
