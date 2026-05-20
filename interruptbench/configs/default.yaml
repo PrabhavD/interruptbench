@@ -6,15 +6,20 @@ env:
   max_steps: 20
   seed: 42
 
-# training:
-#   model: "Qwen/Qwen2.5-1.5B-Instruct"
-#   n_episodes: 200
-#   epochs: 3
-#   batch_size: 4
-#   grad_accum: 4
-#   num_generations: 4
-#   learning_rate: 1.0e-5
-#   eval_episodes: 20
+# Full training configuration for a more extensive run
+model:
+  name: Qwen/Qwen2.5-0.5B-Instruct
+  load_in_4bit: true
+
+training:
+  learning_rate: 1.0e-5
+  batch_size: 2
+  grad_accum: 4
+  epochs: 1
+  num_generations: 4
+  max_completion_length: 256
+  save_steps: 50
+  logging_steps: 1
 
 # Sample configuration for a quick test run on a smaller model and fewer episodes
 training:
