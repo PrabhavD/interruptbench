@@ -4,3 +4,6 @@ gymnasium==1.2.3
 numpy==2.4.2
 pyyaml==6.0.3
 typing-extensions==4.15.0
+trl==0.17.0
+transformers==4.51.3
+accelerate==1.6.0
